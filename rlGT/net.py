@@ -4,6 +4,7 @@ import numpy as np
 from torch.distributions import Categorical
 import time
 from uti import create_data
+import os
 
 def init_weights(layer):
     if type(layer) == nn.Linear:
@@ -197,10 +198,19 @@ class A2C(nn.Module):
         self.decode_type = decode_type
     
     def save_model(self, args):
+
+        save_path = 'save/BestNet' + args.num + '.pt'
+        save_dir = os.path.dirname(save_path)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         torch.save(
             self.state_dict(),
-            'save/BestNet'+args.num+'.pt'
+            save_path
         )
+        # torch.save(
+        #     self.state_dict(),
+        #     'save/BestNet'+args.num+'.pt'
+        # )
         self.args.logger.info('model weights saved')
 
     def load_weights(self ,args):

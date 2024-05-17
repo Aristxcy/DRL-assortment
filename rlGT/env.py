@@ -43,7 +43,7 @@ class market_dynamic:
             index.append(b_rl[b][np.min(np.where(b_rl[b]==ass[b])[-1])])#[-1]取的是ass中的元素在ranklist里面的index，np.min找出来的是ass里面元素在b_rl里面最靠前的那个位置，这个索引找出来的最靠前的prod
         index = torch.tensor(index, dtype=torch.int64).reshape(self.batch_size,-1)-1#0到10
         prices = np.hstack((self.products_price,np.array([0])))
-        self.purchase = torch.zeros((self.batch_size, self.num_of_products+1),dtype= torch.int64)
+        self.purchase = torch.zeros((self.batch_size, self.num_of_products+1))
         self.purchase.scatter_(1,index,1)
         index = index.numpy()
         reward = prices[index]
@@ -78,7 +78,7 @@ class market_dynamic_Net:
         self.products_price=products_price
         self.num_of_products=len(initial_inventory)
         self.cardinality = args.cardinality
-        self.purchase=np.zeros((self.batch_size,self.num_of_products),dtype= np.int)
+        self.purchase=np.zeros((self.batch_size,self.num_of_products))
         self.T=0#剩余的销售时间
         self.arrivals = 0
     def reset(self,initial_inventory,T):
@@ -92,11 +92,11 @@ class market_dynamic_Net:
         # 初始化
         prices = np.hstack((self.products_price,np.array([0])))
         index = torch.multinomial(prob,1).cpu()
-        self.purchase = torch.zeros((self.batch_size, self.num_of_products+1),dtype= np.int)
+        self.purchase = torch.zeros((self.batch_size, self.num_of_products+1))
         self.purchase.scatter_(1,index,1)
         index = index.numpy()
         reward = prices[index]
-        self.inventory_level-=self.purchase[:,:-1].numpy()#最后一列是不买
+        self.inventory_level-=self.purchase[:,:-1].numpy().astype(np.int64) #最后一列是不买
         self.T-=1
         self.arrivals += 1
         now = time.time()
